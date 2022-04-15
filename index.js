@@ -1,18 +1,16 @@
+
+
 const chooseOptimalDistance = (t, k, ls) => {
   if (!isValidArguments(t, k, ls)) {
     return null;
   }
-  const sumOfCombination = combine(ls, k);
+  const sumOfCombination = combine()(ls, k)
+  .map((element) =>
+    element.reduce((curr, el) => parseInt(curr) + parseInt(el)))
+    
+    const result = sumOfCombination.filter((el) => el <= t).sort((a, b) => b - a)[0]
 
-  return parseInt(
-      sumOfCombination.reduce(
-        (total, current) =>
-          current <= t ? (total <= current ? current : null) : total, 
-          0
-      )
-    ) || null;
-  //Чи більш зрозумілий але "важчий" з точки зору продуктивності
-  //   return parseInt(sumOfCombination.filter((el) => el <= t).sort((a, b) => b - a)[0]) || null
+    return result || null
 };
 
 function isValidArguments(t, k, ls) {
@@ -28,34 +26,29 @@ function isValidArguments(t, k, ls) {
   return (tIsValid && kIsValid && lsIsValid) || false;
 }
 
-function combine(array, k) {
-  const arrayMaxIndex = array.length - 1; 
-  const maskMaxIndex = k - 1;
-  const result = []; 
-  const mask = [];
-  let finish = false;
-  for (let i = 0; i < k; i++) mask.push(array[i]); 
-  while (!finish) {
-    finish = true;
-    const str = mask.join(" ");
-    if (!result.includes(str)) result.push(str);
-    for (let i = 0; i < k; i++) {
-      if (mask[maskMaxIndex - i] != array[arrayMaxIndex - i]) {
-        finish = false;
-        let p = array.indexOf(mask[maskMaxIndex - i]);
-        mask[maskMaxIndex - i] = array[++p];
-        for (let j = maskMaxIndex - i + 1; j < k; j++) {
-          mask[j] = array[++p];
-        }
-        break;
+function combine() {
+  let res = null;
+    const combinations = (ls, k, start, index, current) => {
+      if (index === k) {
+        res.push([...current]);
+        return;
       }
-    }
-  }
-  return result.map((element) =>
-    element.split(" ").reduce((curr, el) => parseInt(curr) + parseInt(el))
-  );
+      for (let i = start; i < ls.length; i ++) {
+        current[index] = ls[i];
+        combinations(ls, k, i + 1, index + 1, current);
+      }
+    };
+
+  return function(ls, k){
+    res = [];
+    combinations(ls, k, 0, 0, []);
+    const temp = res;
+    res = null;
+    return temp;
+  };
 }
 
+console.log(chooseOptimalDistance(230, 3, [ 91, 74, 73, 85, 73, 81, 87 ]));
 console.log(chooseOptimalDistance(174, 3, [51, 56, 58, 59, 61]));
 console.log(chooseOptimalDistance(163, 3, [50]));
 
